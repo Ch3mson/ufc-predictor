@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import logging
 import os
+import re
 
 app = Flask(__name__)
 
@@ -21,14 +22,14 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODELS_DIR = os.path.join(BASE_DIR, 'models')
 DATA_PATH = os.path.join(BASE_DIR, 'data', 'avg_attributes.csv')
 
-# Load Scaler
-SCALER_PATH = os.path.join(MODELS_DIR, 'scaler.joblib')
-try:
-    scaler = joblib.load(SCALER_PATH)
-    logging.info(f"Scaler loaded successfully from {SCALER_PATH}")
-except Exception as e:
-    logging.error(f"Error loading scaler: {e}")
-    scaler = None
+# Load Scaler (Optional - Commented Out if Not Needed)
+# SCALER_PATH = os.path.join(MODELS_DIR, 'scaler.joblib')
+# try:
+#     scaler = joblib.load(SCALER_PATH)
+#     logging.info(f"Scaler loaded successfully from {SCALER_PATH}")
+# except Exception as e:
+#     logging.error(f"Error loading scaler: {e}")
+#     scaler = None
 
 # Load Models
 model_paths = {
@@ -86,24 +87,20 @@ def predict():
     data = request.get_json()
     fighter_name = data.get('fighter_name')
     model_type = data.get('model_type', 'rf')  # Default to 'rf' if not specified
-    
+
     logging.info(f"Received prediction request for fighter '{fighter_name}' using model '{model_type}'")
-    
+
     if model_type not in models or models[model_type] is None:
         logging.error(f"Model type '{model_type}' is not available.")
         return jsonify({'error': f"Model type '{model_type}' is not available."}), 400
-    
+
     fighter_attributes = get_fighter_attributes(fighter_name)
     if fighter_attributes is None:
         return jsonify({'error': f"Fighter '{fighter_name}' not found."}), 404
-    
-    # Scale the attributes
-    if scaler is not None:
-        fighter_attributes_scaled = scaler.transform(fighter_attributes)
-    else:
-        logging.error("Scaler is not loaded.")
-        return jsonify({'error': "Scaler is not loaded."}), 500
-    
+
+    # Skip scaling since data is already scaled
+    fighter_attributes_scaled = fighter_attributes  # Directly use the loaded scaled data
+
     # Predict probability
     try:
         model = models[model_type]
@@ -125,41 +122,37 @@ def match_predict():
     fighter_A = data.get('fighter_A')
     fighter_B = data.get('fighter_B')
     model_type = data.get('model_type', 'rf')  # Default to 'rf' if not specified
-    
+
     logging.info(f"Received match prediction request between '{fighter_A}' and '{fighter_B}' using model '{model_type}'")
-    
+
     if model_type not in models or models[model_type] is None:
         logging.error(f"Model type '{model_type}' is not available.")
         return jsonify({'error': f"Model type '{model_type}' is not available."}), 400
-    
+
     # Retrieve attributes for both fighters
     attributes_A = get_fighter_attributes(fighter_A)
     attributes_B = get_fighter_attributes(fighter_B)
-    
+
     if attributes_A is None or attributes_B is None:
         return jsonify({'error': f"One or both fighters not found in the dataset."}), 404
-    
-    # Scale the attributes
-    if scaler is not None:
-        attributes_A_scaled = scaler.transform(attributes_A)
-        attributes_B_scaled = scaler.transform(attributes_B)
-    else:
-        logging.error("Scaler is not loaded.")
-        return jsonify({'error': "Scaler is not loaded."}), 500
-    
+
+    # Skip scaling since data is already scaled
+    attributes_A_scaled = attributes_A  # Directly use the loaded scaled data
+    attributes_B_scaled = attributes_B
+
     # Predict probabilities
     try:
         model = models[model_type]
         prob_A = model.predict_proba(attributes_A_scaled)[0][1]
         prob_B = model.predict_proba(attributes_B_scaled)[0][1]
-        
+
         # Normalize probabilities
         total_prob = prob_A + prob_B
         probability_A = round((prob_A / total_prob) * 100, 2) if total_prob > 0 else 0
         probability_B = round((prob_B / total_prob) * 100, 2) if total_prob > 0 else 0
-        
+
         logging.info(f"Predicted match probabilities: '{fighter_A}': {probability_A}%, '{fighter_B}': {probability_B}%")
-        
+
         return jsonify({
             'fighter_A': fighter_A,
             'fighter_B': fighter_B,
