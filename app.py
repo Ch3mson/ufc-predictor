@@ -164,10 +164,30 @@ def match_predict():
         logging.error(f"Error during match prediction: {e}")
         return jsonify({'error': "An error occurred during match prediction."}), 500
 
-# Health Check Endpoint
-@app.route('/health', methods=['GET'])
-def health():
-    return jsonify({'status': 'API is running.'}), 200
+@app.route('/latest_date', methods=['GET'])
+def get_latest_date():
+    RAW_DATA_PATH = os.path.join(BASE_DIR, 'data', 'raw_total_fight_data.csv')
+    
+    try:
+        # Read the CSV file with the correct delimiter
+        df = pd.read_csv(RAW_DATA_PATH, sep=';')
+        
+        # Ensure the 'date' column exists
+        if 'date' not in df.columns:
+            logging.error("The CSV file does not contain a 'date' column.")
+            return jsonify({'error': "The CSV file does not contain a 'date' column."}), 500
+        
+        # Get the first date from the 'date' column
+        latest_date = df['date'].iloc[0]
+        
+        logging.info(f"Latest fetched date: {latest_date}")
+        return jsonify({'latest_date': latest_date}), 200
+    except FileNotFoundError:
+        logging.error(f"CSV file not found at path: {RAW_DATA_PATH}")
+        return jsonify({'error': "Data file not found."}), 500
+    except Exception as e:
+        logging.error(f"Error retrieving latest date: {e}")
+        return jsonify({'error': "An error occurred while retrieving the latest date."}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3001, debug=True)

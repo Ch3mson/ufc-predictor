@@ -1,0 +1,21 @@
+steps:
+  # Step 1: Submit the build and push the Docker image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args: ['builds', 'submit', '--tag', 'northamerica-northeast2-docker.pkg.dev/ufc-app-438518/ufc-app/ufcimage:latest']
+
+  # Step 2: Deploy the image to Cloud Run
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      [
+        'run',
+        'deploy',
+        'ufc-app-service',  # Replace with your Cloud Run service name
+        '--image',
+        'northamerica-northeast2-docker.pkg.dev/ufc-app-438518/ufc-app/ufcimage:latest',
+        '--region',
+        'northamerica-northeast2',
+        '--platform',
+        'managed',
+        '--allow-unauthenticated', # Remove if you want to restrict access
+      ]
+
