@@ -17,15 +17,16 @@ A Jupyter Notebook that cleans a UFC dataset and utilizes 6 different machine le
 
 1. Clone the repo
    ```sh
-   git clone https://github.com/Ch3mson/ufc-client.git
+   git clone https://github.com/Ch3mson/ufc-predictor
    ```
-2. Change directory to project and ensure npm and node.js are installed
+2. Change directory to project and ensure Python3 and pip are installed
    ```sh
-   npm install
+   pip install -r requirements.txt
    ```
-3. Run the server and do as you wish
+4. Ensure Jupyter Notebook extension is insalled on your IDE (VSCode)
+5. Run notebook and adjust your desired values in the last cell. Example:
    ```sh
-   npm run dev
+   match_probability('Conor McGregor', 'Charles Oliveira')
    ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
