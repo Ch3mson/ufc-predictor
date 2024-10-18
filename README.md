@@ -10,7 +10,7 @@ Look! Jon Jones only has a 32% chance of beating Stipe Miocic for the upcoming U
 </p>
 
 <p>
-A client built on the UFC predictor microservice available in this repository: https://github.com/Ch3mson/ufc-predictor. This app allows anyone on the web to access the ML model that I created to predict on upcoming UFC fights, for both men and women. For best results, choose fighters that are in the same weight division and gender, since the model is trained on fight stats, and doesn't take into account of weight/gender. On startup, it may take a few seconds since Google Cloud Run needs to do a cold start when it is inactive.
+A Jupyter Notebook that cleans a UFC dataset and utilizes 6 different machine learning models to predict future UFC fight outcomes. The models with their respected accuracies: Logistic Regression = 78.99%, Random Forest = 81.98%, Decision Trees = 77.06%, Naive Bayes Model = 74.94%, KNN = 79.26%, and CSM = 79.1%. The highest one being Random Forest, Hence is used as the model for the predicting function on the bottom of the notebook.
 </p>
 
 ### Installation
